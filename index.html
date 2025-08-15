@@ -61,7 +61,7 @@
     snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
     dir = {x:1,y:0};
     nextDir = {...dir};
-    spawnFood();
+    spawnFood(6);
     score = 0; scoreEl.textContent = score;
     tickMs = TICK_MS_START;
     paused = false; dead = false; steps = 0;
