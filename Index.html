@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snake with Walls (Mobile)</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; display:flex; justify-content:center; align-items:center; background:#111; }
+  canvas { background:#111; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// MOBILE SCALING
+const size = Math.min(window.innerWidth, window.innerHeight) - 20;
+canvas.width = size;
+canvas.height = size;
+
+const grid = 20;
+const cols = Math.floor(canvas.width/grid);
+const rows = Math.floor(canvas.height/grid);
+
+let snake = [{x:10, y:10}];
+let dir = {x:1, y:0};
+let food = {x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)};
+let gameOver = false;
+
+// TOUCH CONTROLS
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+});
+canvas.addEventListener("touchend", e => {
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  if(Math.abs(dx) > Math.abs(dy)){
+    if(dx>0 && dir.x===0) dir={x:1,y:0};
+    else if(dx<0 && dir.x===0) dir={x:-1,y:0};
+  } else {
+    if(dy>0 && dir.y===0) dir={x:0,y:1};
+    else if(dy<0 && dir.y===0) dir={x:0,y:-1};
+  }
+});
+
+// KEYBOARD (optional)
+document.addEventListener("keydown", e=>{
+  if(e.key==="ArrowUp" && dir.y===0){ dir={x:0,y:-1}; }
+  else if(e.key==="ArrowDown" && dir.y===0){ dir={x:0,y:1}; }
+  else if(e.key==="ArrowLeft" && dir.x===0){ dir={x:-1,y:0}; }
+  else if(e.key==="ArrowRight" && dir.x===0){ dir={x:1,y:0}; }
+});
+
+function update(){
+  if(gameOver) return;
+  const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+  // WALL COLLISION
+  if(head.x<0 || head.x>=cols || head.y<0 || head.y>=rows){
+    gameOver = true; alert("Game Over! You hit the wall."); return;
+  }
+
+  // SELF COLLISION
+  for(let segment of snake){ if(segment.x===head.x && segment.y===head.y){ gameOver=true; alert("Game Over! You ran into yourself."); return; } }
+
+  snake.unshift(head);
+
+  // FOOD
+  if(head.x===food.x && head.y===food.y){
+    food = {x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows)};
+  } else { snake.pop(); }
+
+  draw();
+}
+
+function draw(){
+  ctx.fillStyle="#111"; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // FOOD
+  ctx.fillStyle="red"; ctx.fillRect(food.x*grid, food.y*grid, grid, grid);
+
+  // SNAKE
+  ctx.fillStyle="lime"; for(let s of snake){ ctx.fillRect(s.x*grid, s.y*grid, grid-1, grid-1); }
+
+  // WALL BORDER
+  ctx.strokeStyle="white"; ctx.lineWidth=2; ctx.strokeRect(0,0,canvas.width,canvas.height);
+}
+
+setInterval(update, 100);
+</script>
+</body>
+</html>
